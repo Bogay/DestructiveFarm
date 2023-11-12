@@ -21,6 +21,7 @@ from enum import Enum
 from math import ceil
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
+from typing import Optional, BinaryIO
 
 
 os_windows = os.name == "nt"
@@ -131,7 +132,6 @@ def parse_args():
         "Too little value will make time limits for sploits smaller, "
         "too big will miss flags from some rounds",
     )
-
     parser.add_argument(
         "-v",
         "--verbose-attacks",
@@ -139,6 +139,12 @@ def parse_args():
         type=int,
         default=1,
         help="Sploits' outputs and found flags will be shown for the N first attacks",
+    )
+    parser.add_argument(
+        "--timeout",
+        metavar="N",
+        type=float,
+        help="Override exploit's timeout",
     )
 
     group = parser.add_mutually_exclusive_group()
@@ -412,7 +418,13 @@ def display_sploit_output(team_name, output_lines):
         print("\n" + "\n".join(prefix + line.rstrip() for line in output_lines) + "\n")
 
 
-def process_sploit_output(stream, args, team_name, flag_format, attack_no):
+def process_sploit_output(
+    stream: Optional[BinaryIO],
+    args,
+    team_name: str,
+    flag_format: re.Pattern,
+    attack_no: int,
+):
     try:
         output_lines = []
         instance_flags = set()
@@ -475,7 +487,13 @@ instance_storage = InstanceStorage()
 instance_lock = threading.RLock()
 
 
-def launch_sploit(args, team_name, team_addr, attack_no, flag_format):
+def launch_sploit(
+    args,
+    team_name: str,
+    team_addr: str,
+    attack_no: int,
+    flag_format: re.Pattern,
+):
     # For sploits written in Python, this env variable forces the interpreter to flush
     # stdout and stderr after each newline. Note that this is not default behavior
     # if the sploit's output is redirected to a pipe.
@@ -514,7 +532,14 @@ def launch_sploit(args, team_name, team_addr, attack_no, flag_format):
     return proc, instance_storage.register_start(proc)
 
 
-def run_sploit(args, team_name, team_addr, attack_no, max_runtime, flag_format):
+def run_sploit(
+    args,
+    team_name: str,
+    team_addr: str,
+    attack_no: int,
+    max_runtime: float,
+    flag_format: re.Pattern,
+):
     try:
         with instance_lock:
             if exit_event.is_set():
@@ -560,7 +585,7 @@ def run_sploit(args, team_name, team_addr, attack_no, max_runtime, flag_format):
         logging.error("Failed to finish sploit: {}".format(repr(e)))
 
 
-def show_time_limit_info(args, config, max_runtime, attack_no):
+def show_time_limit_info(args, config: dict, max_runtime: float, attack_no: int):
     if attack_no == 1:
         min_attack_period = (
             config["FLAG_LIFETIME"] - config["SUBMIT_PERIOD"] - POST_PERIOD
@@ -590,7 +615,7 @@ def show_time_limit_info(args, config, max_runtime, attack_no):
 PRINTED_TEAM_NAMES = 5
 
 
-def get_target_teams(args, teams, attack_no):
+def get_target_teams(args, teams: dict, attack_no: int):
     if args.not_per_team:
         return {"*": None}
 
@@ -654,6 +679,8 @@ def main(args):
         logging.info("Launching an attack #{}".format(attack_no))
 
         max_runtime = args.attack_period / ceil(len(teams) / args.pool_size)
+        if args.timeout is not None:
+            max_runtime = args.timeout
         show_time_limit_info(args, config, max_runtime, attack_no)
 
         for team_name, team_addr in teams.items():
