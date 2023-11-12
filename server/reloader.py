@@ -12,7 +12,7 @@ _reload_lock = threading.RLock()
 if "CONFIG" in os.environ:
     config_path = os.environ["CONFIG"]
 else:
-    config_path = os.path.join(app.root_path, 'config.py')
+    config_path = os.path.join(app.root_path, "config.py")
 
 config_spec = importlib.util.spec_from_file_location("server.config", config_path)
 config_module = importlib.util.module_from_spec(config_spec)
@@ -40,9 +40,9 @@ def get_config():
                 try:
                     config_spec.loader.exec_module(config_module)
                     _cur_config = config_module.CONFIG
-                    app.logger.info('New config loaded')
+                    app.logger.info("New config loaded")
                 except Exception as e:
-                    app.logger.error('Failed to reload config: %s', e)
+                    app.logger.error("Failed to reload config: %s", e)
 
                 _config_mtime = cur_mtime
 

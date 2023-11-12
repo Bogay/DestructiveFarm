@@ -11,12 +11,12 @@ from flask import g
 from server import app
 
 
-schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
+schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 if "FLAGS_DATABASE" in os.environ:
     db_filename = os.environ["FLAGS_DATABASE"]
 else:
-    db_filename = os.path.join(os.path.dirname(__file__), 'flags.sqlite')
+    db_filename = os.path.join(os.path.dirname(__file__), "flags.sqlite")
 
 
 _init_started = False
@@ -24,8 +24,8 @@ _init_lock = threading.RLock()
 
 
 def _init(database):
-    app.logger.info('Creating database schema')
-    with app.open_resource(schema_path, 'r') as f:
+    app.logger.info("Creating database schema")
+    with app.open_resource(schema_path, "r") as f:
         database.executescript(f.read())
 
 
@@ -49,7 +49,7 @@ def get(context_bound=True):
 
     global _init_started
 
-    if context_bound and 'database' in g:
+    if context_bound and "database" in g:
         return g.database
 
     need_init = not os.path.exists(db_filename)
@@ -73,5 +73,5 @@ def query(sql, args=()):
 
 @app.teardown_appcontext
 def close(_):
-    if 'database' in g:
+    if "database" in g:
         g.database.close()

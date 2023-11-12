@@ -6,13 +6,17 @@ from server.models import FlagStatus, SubmitResult
 
 RESPONSES = {
     FlagStatus.ACCEPTED: [Result.SUCCESS_FLAG_ACCEPTED],
-    FlagStatus.REJECTED: [Result.ERROR_FLAG_EXPIRED, Result.ERROR_FLAG_YOURS,
-                          Result.ERROR_FLAG_SUBMITTED, Result.ERROR_FLAG_NOT_FOUND],
+    FlagStatus.REJECTED: [
+        Result.ERROR_FLAG_EXPIRED,
+        Result.ERROR_FLAG_YOURS,
+        Result.ERROR_FLAG_SUBMITTED,
+        Result.ERROR_FLAG_NOT_FOUND,
+    ],
 }
 
 
 def submit_flags(flags, config):
-    h = Helper(config['SYSTEM_HOST'])
+    h = Helper(config["SYSTEM_HOST"])
     codes = h.attack(*[item.flag for item in flags])
 
     for item, code in zip(flags, codes):

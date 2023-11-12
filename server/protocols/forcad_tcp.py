@@ -7,12 +7,32 @@ from server.models import FlagStatus, SubmitResult
 
 
 RESPONSES = {
-    FlagStatus.QUEUED: ['timeout', 'game not started', 'try again later', 'game over', 'is not up',
-                        'no such flag'],
-    FlagStatus.ACCEPTED: ['accepted', 'congrat'],
-    FlagStatus.REJECTED: ['bad', 'wrong', 'expired', 'unknown', 'your own',
-                          'too old', 'not in database', 'already submitted', 'invalid flag',
-                          'self', 'invalid', 'already_submitted', 'team_not_found', 'too_old', 'stolen'],
+    FlagStatus.QUEUED: [
+        "timeout",
+        "game not started",
+        "try again later",
+        "game over",
+        "is not up",
+        "no such flag",
+    ],
+    FlagStatus.ACCEPTED: ["accepted", "congrat"],
+    FlagStatus.REJECTED: [
+        "bad",
+        "wrong",
+        "expired",
+        "unknown",
+        "your own",
+        "too old",
+        "not in database",
+        "already submitted",
+        "invalid flag",
+        "self",
+        "invalid",
+        "already_submitted",
+        "team_not_found",
+        "too_old",
+        "stolen",
+    ],
 }
 
 READ_TIMEOUT = 5
@@ -36,29 +56,30 @@ def recvall(sock):
             break
 
     sock.settimeout(READ_TIMEOUT)
-    return b''.join(chunks)
+    return b"".join(chunks)
 
 
 def submit_flags(flags, config):
-    sock = socket.create_connection((config['SYSTEM_HOST'], config['SYSTEM_PORT']),
-                                    READ_TIMEOUT)
+    sock = socket.create_connection(
+        (config["SYSTEM_HOST"], config["SYSTEM_PORT"]), READ_TIMEOUT
+    )
 
     greeting = recvall(sock)
-    if b'Welcome' not in greeting:
-        raise Exception('Checksystem does not greet us: {}'.format(greeting))
+    if b"Welcome" not in greeting:
+        raise Exception("Checksystem does not greet us: {}".format(greeting))
 
-    sock.sendall(config['TEAM_TOKEN'].encode() + b'\n')
+    sock.sendall(config["TEAM_TOKEN"].encode() + b"\n")
     invite = recvall(sock)
-    if b'enter your flags' not in invite:
-        raise Exception('Team token seems to be invalid: {}'.format(invite))
+    if b"enter your flags" not in invite:
+        raise Exception("Team token seems to be invalid: {}".format(invite))
 
     unknown_responses = set()
     for item in flags:
-        sock.sendall(item.flag.encode() + b'\n')
+        sock.sendall(item.flag.encode() + b"\n")
         response = recvall(sock).decode().strip()
         if response:
             response = response.splitlines()[0]
-        response = response.replace('[{}] '.format(item.flag), '')
+        response = response.replace("[{}] ".format(item.flag), "")
 
         response_lower = response.lower()
         for status, substrings in RESPONSES.items():
@@ -69,7 +90,9 @@ def submit_flags(flags, config):
             found_status = FlagStatus.QUEUED
             if response not in unknown_responses:
                 unknown_responses.add(response)
-                app.logger.warning('Unknown checksystem response (flag will be resent): %s', response)
+                app.logger.warning(
+                    "Unknown checksystem response (flag will be resent): %s", response
+                )
 
         yield SubmitResult(item.flag, found_status, response)
 

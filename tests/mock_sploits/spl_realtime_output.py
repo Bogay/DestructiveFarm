@@ -12,7 +12,7 @@ import time
 
 def main():
     for i in range(10):
-        flag = hashlib.sha256(os.urandom(10)).hexdigest()[:31].upper() + '='
+        flag = hashlib.sha256(os.urandom(10)).hexdigest()[:31].upper() + "="
         print(flag)
         # sys.stdout.flush()
         # Thanks to PYTHONUNBUFFERED=1, this sploit should work even without calling flush.
@@ -20,5 +20,5 @@ def main():
         time.sleep(5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
