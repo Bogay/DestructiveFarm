@@ -3,7 +3,7 @@ CONFIG = {
     # The clients will run sploits on TEAMS and
     # fetch FLAG_FORMAT from sploits' stdout.
     "TEAMS": {"Team #{}".format(i): "10.0.0.{}".format(i) for i in range(1, 5 + 1)},
-    "FLAG_FORMAT": r"[A-Z0-9]{31}=",
+    "FLAG_FORMAT": r"hitcon\{[0-9a-f]{96}\}",
     # This configures how and where to submit flags.
     # The protocol must be a module in protocols/ directory.
     "SYSTEM_PROTOCOL": "ructf_tcp",
@@ -19,6 +19,10 @@ CONFIG = {
     # 'SYSTEM_PROTOCOL': 'forcad_tcp',
     # 'SYSTEM_HOST': '127.0.0.1',
     # 'SYSTEM_PORT': 31337,
+    #
+    # 'SYSTEM_PROTOCOL': 'hitcon2023',
+    # 'SYSTEM_URL': 'https://final2023.hitconctf.com/v2/team/me/flag',
+    # 'SYSTEM_TOKEN': 'PUT_TOKEN_HERE',
     #
     # 'TEAM_TOKEN': 'your_secret_token',
     # The server will submit not more than SUBMIT_FLAG_LIMIT flags
