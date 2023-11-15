@@ -419,6 +419,7 @@ class FlagStorage:
         with self._lock:
             for flag in flags:
                 if flag in self._flags_seen:
+                    logging.info(f"Flag seen: {flag}")
                     continue
                 self._flags_seen.add(flag)
                 self._queue.append(FlagInfo(flag=flag, team=team_name, exploit=exploit))
