@@ -25,6 +25,7 @@ from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 from typing import Optional, BinaryIO, List
 from pathlib import Path
+import requests
 
 
 os_windows = os.name == "nt"
@@ -41,6 +42,19 @@ Note that this software is highly destructive. Keep it away from children.
 """[
     1:
 ]
+
+
+def send_msg(
+    username: str,
+    content: str,
+):
+    webhook_url = os.environ["DC_WEBHOOK_URL"]
+    data = {"content": content, "username": username}
+    result = requests.post(webhook_url, json=data)
+    try:
+        result.raise_for_status()
+    except Exception as err:
+        logging.error(f"Failed to send webhook: {err}")
 
 
 @dataclass
@@ -439,11 +453,11 @@ def run_post_loop(args):
                     post_flags(args, flags_to_post)
 
                     flag_storage.mark_as_sent(len(flags_to_post))
-                    logging.info(
-                        "{} flags posted to the server ({} in the queue)".format(
-                            len(flags_to_post), flag_storage.queue_size
-                        )
+                    msg = "{} flags posted to the server ({} in the queue)".format(
+                        len(flags_to_post), flag_storage.queue_size
                     )
+                    logging.info(msg)
+                    send_msg("watch_sploit", msg)
                 except Exception as e:
                     logging.error("Can't post flags to the server: {}".format(repr(e)))
                     logging.info("The flags will be posted next time")
@@ -743,7 +757,9 @@ def main(args):
             continue
 
         print()
-        logging.info("Launching an attack #{}".format(attack_no))
+        launching_attack_msg = "Launching an attack #{}".format(attack_no)
+        logging.info(launching_attack_msg)
+        send_msg("watch_sploit", launching_attack_msg)
 
         max_runtime = args.attack_period / ceil(len(teams) / args.pool_size)
         if args.timeout is not None:
