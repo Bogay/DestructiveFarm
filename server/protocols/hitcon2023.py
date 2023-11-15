@@ -18,6 +18,7 @@ def submit_flags(flags: List[Flag], config: Dict[str, Any]):
             system_url,
             headers={
                 "Authorization": token,
+                "Content-Type": "application/json",
             },
             json={"flag": flag.flag},
         )
