@@ -653,7 +653,7 @@ def run_sploit(
             except subprocess.TimeoutExpired:
                 need_kill = True
                 logging.warning(
-                    f'[round {attack_no}] Sploit for "{team_name}" ({team_addr}) ran out of time'
+                    f'[round {attack_no} / {exploit.path}] Sploit for "{team_name}" ({team_addr}) ran out of time'
                 )
 
             with instance_lock:
